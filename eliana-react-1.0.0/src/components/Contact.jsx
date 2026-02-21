@@ -38,7 +38,7 @@ export default function Contact() {
             <p className="text-center max-w-2xl mx-auto mt-5 mb-12 font-Ovo">I&apos;d love to hear from you! If you have any questions, comments or feedback, please use the form below.</p>
 
             <form onSubmit={onSubmit} className="max-w-2xl mx-auto">
-
+                
                 <input type="hidden" name="subject" value="Hariprasath Portfolio - New form Submission" />
 
                 <div className="grid grid-cols-auto gap-6 mt-10 mb-8">
