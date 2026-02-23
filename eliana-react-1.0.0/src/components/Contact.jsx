@@ -1,21 +1,13 @@
-import { useRef, useState } from 'react'
-import emailjs from '@emailjs/browser'
-
-// ─── EmailJS Configuration ───────────────────────────────────────────────────
-// 1. Go to https://www.emailjs.com/ and create a free account
-// 2. Add an Email Service (Gmail) → copy its Service ID below
-// 3. Create an Email Template → copy its Template ID below
-//    Template variables to use: {{from_name}}, {{from_email}}, {{message}}
-// 4. Go to Account → API Keys → copy your Public Key below
-const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';   // e.g. 'service_abc123'
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // e.g. 'template_xyz789'
-const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';   // e.g. 'aBcDeFgHiJkLmNoP'
-// ─────────────────────────────────────────────────────────────────────────────
+import { useState } from 'react'
 
 export default function Contact() {
-    const formRef = useRef(null);
+    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [result, setResult] = useState('');
     const [isSuccess, setIsSuccess] = useState(null);
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const onSubmit = async (event) => {
         event.preventDefault();
@@ -23,18 +15,33 @@ export default function Contact() {
         setIsSuccess(null);
 
         try {
-            await emailjs.sendForm(
-                EMAILJS_SERVICE_ID,
-                EMAILJS_TEMPLATE_ID,
-                formRef.current,
-                EMAILJS_PUBLIC_KEY
-            );
-            setResult('✅ Message sent successfully! I\'ll get back to you soon.');
-            setIsSuccess(true);
-            formRef.current.reset();
+            const res = await fetch('https://formsubmit.co/ajax/hariprasathns804@gmail.com', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    message: formData.message,
+                    _subject: `Portfolio Message from ${formData.name}`,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (data.success === 'true' || data.success === true) {
+                setResult("✅ Message sent! I'll get back to you soon.");
+                setIsSuccess(true);
+                setFormData({ name: '', email: '', message: '' });
+            } else {
+                setResult('❌ Something went wrong. Please try again.');
+                setIsSuccess(false);
+            }
         } catch (err) {
-            console.error('EmailJS error:', err);
-            setResult('❌ Something went wrong. Please try again or email me directly.');
+            console.error('FormSubmit error:', err);
+            setResult('❌ Something went wrong. Please try again.');
             setIsSuccess(false);
         }
     };
@@ -46,7 +53,7 @@ export default function Contact() {
             <h2 className="text-center text-5xl font-Ovo">Get in touch</h2>
             <p className="text-center max-w-2xl mx-auto mt-5 mb-12 font-Ovo">I&apos;d love to hear from you! If you have any questions, comments or feedback, please use the form below.</p>
 
-            <form ref={formRef} onSubmit={onSubmit} className="max-w-2xl mx-auto">
+            <form onSubmit={onSubmit} className="max-w-2xl mx-auto">
 
                 <div className="grid grid-cols-auto gap-6 mt-10 mb-8">
                     <input
@@ -54,14 +61,18 @@ export default function Contact() {
                         placeholder="Enter your name"
                         className="flex-1 px-3 py-2 focus:ring-1 outline-none border border-gray-300 dark:border-white/30 rounded-md bg-white dark:bg-darkHover/30"
                         required
-                        name="from_name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
                     />
                     <input
                         type="email"
                         placeholder="Enter your email"
                         className="flex-1 px-3 py-2 focus:ring-1 outline-none border border-gray-300 dark:border-white/30 rounded-md bg-white dark:bg-darkHover/30"
                         required
-                        name="from_email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
                     />
                 </div>
 
@@ -71,6 +82,8 @@ export default function Contact() {
                     className="w-full px-4 py-2 focus:ring-1 outline-none border border-gray-300 dark:border-white/30 rounded-md bg-white mb-6 dark:bg-darkHover/30"
                     required
                     name="message"
+                    value={formData.message}
+                    onChange={handleChange}
                 ></textarea>
 
                 <button
